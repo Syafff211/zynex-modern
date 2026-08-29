@@ -1,7 +1,17 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Product, StoreSettings, Order } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_SETTINGS, INITIAL_ORDERS } from '../data/initialData';
 import { STORAGE_KEYS, generateInvoiceNumber } from '../utils/helpers';
+import {
+  checkApi,
+  apiLogin,
+  apiLogout,
+  apiFetchCatalog,
+  apiSaveCatalog,
+  getApiToken,
+  setApiToken,
+  CatalogPayload,
+} from '../utils/api';
 
 interface StoreContextType {
   products: Product[];
@@ -15,6 +25,8 @@ interface StoreContextType {
   openOrderModal: (product: Product, variant?: any) => void;
   closeOrderModal: () => void;
   loginAdmin: (pin: string) => boolean;
+  loginAdminServer: (username: string, password: string) => Promise<boolean>;
+  isApiOnline: boolean;
   logoutAdmin: () => void;
   addProduct: (product: Omit<Product, 'id'>) => Product;
   updateProduct: (id: string, product: Partial<Product>) => void;
@@ -93,6 +105,70 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Active modal product
   const [activeOrderProduct, setActiveOrderProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
+
+  // Serverless backend (Vercel /api) — online status & catalog sync
+  const [isApiOnline, setIsApiOnline] = useState(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Deteksi backend serverless saat aplikasi dimuat
+  useEffect(() => {
+    let cancelled = false;
+    checkApi().then((online) => {
+      if (!cancelled) setIsApiOnline(online);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Pull katalog dari server saat localStorage kosong (first visit / perangkat baru)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const online = await checkApi();
+      if (cancelled || !online) return;
+      const hasLocalData = !!localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+      if (hasLocalData) return;
+      const catalog = await apiFetchCatalog();
+      if (cancelled || !catalog) return;
+      const apply: Partial<CatalogPayload> = {};
+      if (Array.isArray(catalog.products) && catalog.products.length > 0) {
+        apply.products = catalog.products;
+      }
+      if (catalog.settings && typeof catalog.settings === 'object' && Object.keys(catalog.settings).length > 0) {
+        apply.settings = catalog.settings;
+      }
+      if (Array.isArray(catalog.orders)) {
+        apply.orders = catalog.orders;
+      }
+      if (apply.products) setProducts(apply.products);
+      if (apply.settings) setSettings(apply.settings);
+      if (apply.orders) setOrders(apply.orders);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-sync: kirim data ke server saat ada perubahan (admin server login aktif)
+  useEffect(() => {
+    const token = getApiToken();
+    if (!token || !isApiOnline) return;
+    const timer = setTimeout(() => {
+      apiSaveCatalog({ products, settings, orders }).catch(() => {
+        /* best-effort, abaikan error jaringan */
+      });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [products, settings, orders, isApiOnline]);
 
   // Sync to LocalStorage
   useEffect(() => {
@@ -180,7 +256,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return false;
   };
 
+  const loginAdminServer = async (username: string, password: string): Promise<boolean> => {
+    const result = await apiLogin(username, password);
+    if (!result) return false;
+    setApiToken(result.token);
+    setIsAdminAuthenticated(true);
+    localStorage.setItem(STORAGE_KEYS.AUTH, 'true');
+    // Tarik katalog dari server (data backend lebih baru = sumber kebenaran)
+    apiFetchCatalog().then((catalog) => {
+      if (!isMountedRef.current || !catalog) return;
+      if (Array.isArray(catalog.products) && catalog.products.length > 0) {
+        setProducts(catalog.products);
+      }
+      if (catalog.settings && typeof catalog.settings === 'object' && Object.keys(catalog.settings).length > 0) {
+        setSettings(catalog.settings);
+      }
+      if (Array.isArray(catalog.orders)) {
+        setOrders(catalog.orders);
+      }
+    });
+    return true;
+  };
+
   const logoutAdmin = () => {
+    apiLogout();
     setIsAdminAuthenticated(false);
     localStorage.removeItem(STORAGE_KEYS.AUTH);
     navigateTo('store');
@@ -304,6 +403,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         openOrderModal,
         closeOrderModal,
         loginAdmin,
+        loginAdminServer,
+        isApiOnline,
         logoutAdmin,
         addProduct,
         updateProduct,
