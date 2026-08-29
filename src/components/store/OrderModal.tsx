@@ -58,15 +58,14 @@ export const OrderModal: React.FC = () => {
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim()) {
-      setErrorMsg('Silakan isi Nama Anda');
+      setErrorMsg('Silakan masukkan Nama Anda.');
       return;
     }
     if (!customerWhatsapp.trim()) {
-      setErrorMsg('Silakan isi Nomor WhatsApp Anda');
+      setErrorMsg('Silakan masukkan Nomor WhatsApp Anda.');
       return;
     }
 
-    // Create Order in local state & admin database
     const newOrder = createOrder({
       customerName: customerName.trim(),
       customerWhatsapp: customerWhatsapp.trim(),
@@ -81,7 +80,6 @@ export const OrderModal: React.FC = () => {
 
     setSubmittedOrder(newOrder);
 
-    // Build WhatsApp URL & redirect
     const waUrl = buildWhatsappOrderUrl({
       adminPhone: settings.whatsappNumber,
       invoice: newOrder.invoiceNumber,
@@ -98,19 +96,19 @@ export const OrderModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-slate-900/95 border border-cyan-500/30 backdrop-blur-2xl shadow-2xl shadow-cyan-500/10 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="relative w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-700/80 shadow-2xl overflow-hidden my-4 max-h-[92vh] flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-              <DynamicIcon name={activeOrderProduct.icon} className="w-5 h-5" />
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <DynamicIcon name={activeOrderProduct.icon} className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
-                Konfirmasi Pemesanan
+              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">
+                Formulir Pemesanan
               </span>
-              <h3 className="text-lg font-black text-white">
+              <h3 className="text-sm sm:text-base font-bold text-white leading-snug">
                 {activeOrderProduct.name}
               </h3>
             </div>
@@ -118,7 +116,7 @@ export const OrderModal: React.FC = () => {
 
           <button
             onClick={closeOrderModal}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -126,19 +124,18 @@ export const OrderModal: React.FC = () => {
 
         {/* Modal Body */}
         {!submittedOrder ? (
-          <form onSubmit={handleSubmitOrder} className="p-5 sm:p-6 space-y-5 max-h-[80vh] overflow-y-auto">
-            {/* Error Message */}
+          <form onSubmit={handleSubmitOrder} className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 text-xs">
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-xs text-red-400">
+              <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center gap-2 text-red-400">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            {/* Product Variants (if available) */}
+            {/* Product Variants (if applicable) */}
             {activeOrderProduct.variants && activeOrderProduct.variants.length > 0 && (
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-slate-300 font-bold mb-1.5 uppercase tracking-wider text-[11px]">
                   Pilih Varian / Kapasitas:
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -149,14 +146,14 @@ export const OrderModal: React.FC = () => {
                         type="button"
                         key={v.id}
                         onClick={() => setActiveVariant(v)}
-                        className={`p-2.5 rounded-xl border text-left transition-all text-xs ${
+                        className={`p-2 rounded-xl border text-left transition-all ${
                           isSelected
-                            ? 'bg-cyan-500/20 border-cyan-400 text-white font-bold ring-1 ring-cyan-400'
-                            : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                            ? 'bg-cyan-500/15 border-cyan-400 text-white font-bold ring-1 ring-cyan-400/50'
+                            : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-700'
                         }`}
                       >
-                        <div className="text-white font-bold truncate">{v.name}</div>
-                        <div className="text-cyan-400 font-extrabold mt-0.5">{formatIDR(v.price)}</div>
+                        <div className="text-white font-bold truncate text-[11px]">{v.name}</div>
+                        <div className="text-cyan-400 font-mono font-bold mt-0.5">{formatIDR(v.price)}</div>
                       </button>
                     );
                   })}
@@ -164,44 +161,44 @@ export const OrderModal: React.FC = () => {
               </div>
             )}
 
-            {/* Product Spec & Price Box */}
-            <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            {/* Product Summary Box */}
+            <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <div className="text-xs text-slate-400">Paket Terpilih:</div>
-                <div className="text-sm font-bold text-white">
+                <div className="text-[11px] text-slate-400">Paket:</div>
+                <div className="font-bold text-white">
                   {activeVariant ? activeVariant.name : activeOrderProduct.name}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">
+                <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-xs">
                   {currentSpecs}
                 </div>
               </div>
               <div className="sm:text-right shrink-0">
-                <div className="text-[11px] text-slate-400">Total Pembayaran:</div>
-                <div className="text-2xl font-black text-cyan-400">
+                <div className="text-[10px] text-slate-400">Total Harga:</div>
+                <div className="text-xl sm:text-2xl font-black text-cyan-400">
                   {formatIDR(currentPrice)}
                 </div>
               </div>
             </div>
 
-            {/* Customer Information Inputs */}
+            {/* Customer Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Nama Lengkap / Panggilan <span className="text-cyan-400">*</span>
+                <label className="block text-slate-300 font-semibold mb-1">
+                  Nama Anda <span className="text-cyan-400">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Dimas Kurniawan"
+                  placeholder="Contoh: Dimas"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Nomor WhatsApp Aktif <span className="text-cyan-400">*</span>
+                <label className="block text-slate-300 font-semibold mb-1">
+                  Nomor WhatsApp <span className="text-cyan-400">*</span>
                 </label>
                 <input
                   type="tel"
@@ -209,112 +206,109 @@ export const OrderModal: React.FC = () => {
                   placeholder="Contoh: 081234567890"
                   value={customerWhatsapp}
                   onChange={(e) => setCustomerWhatsapp(e.target.value)}
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                 />
               </div>
             </div>
 
-            {/* Notes / Specific details (e.g. email or domain name) */}
+            {/* Notes Input */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Catatan / Data Akun / Nama Domain
-                <span className="text-slate-500 text-[11px] font-normal ml-1">
+              <label className="block text-slate-300 font-semibold mb-1">
+                Catatan / Data Akun / Domain
+                <span className="text-slate-500 font-normal ml-1">
                   (Khusus Canva isi email, domain isi nama domain)
                 </span>
               </label>
               <textarea
                 rows={2}
-                placeholder="Contoh: Email Canva / Nama domain diinginkan / Permintaan khusus..."
+                placeholder="Email Canva / Nama Domain / Request khusus..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 resize-none"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none"
               />
             </div>
 
-            {/* Payment Method Selector */}
+            {/* Payment Selector */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                Pilih Metode Pembayaran:
+              <label className="block text-slate-300 font-bold mb-1.5 uppercase tracking-wider text-[11px]">
+                Pilih Pembayaran:
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('qris')}
-                  className={`p-3 rounded-xl border text-center transition-all ${
+                  className={`p-2.5 rounded-xl border text-center transition-all ${
                     paymentMethod === 'qris'
-                      ? 'bg-cyan-500/20 border-cyan-400 text-white font-bold ring-1 ring-cyan-400'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'bg-cyan-500/15 border-cyan-400 text-white font-bold ring-1 ring-cyan-400'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  <QrCode className="w-5 h-5 mx-auto mb-1 text-cyan-400" />
-                  <div className="text-xs font-bold text-white">QRIS All Bank</div>
-                  <div className="text-[10px] text-emerald-400 font-semibold">Instant Fee 0%</div>
+                  <QrCode className="w-4 h-4 mx-auto mb-1 text-cyan-400" />
+                  <div className="font-bold text-white text-[11px]">QRIS Instant</div>
+                  <div className="text-[10px] text-emerald-400">All E-Wallet</div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('dana')}
-                  className={`p-3 rounded-xl border text-center transition-all ${
+                  className={`p-2.5 rounded-xl border text-center transition-all ${
                     paymentMethod === 'dana'
-                      ? 'bg-blue-500/20 border-blue-400 text-white font-bold ring-1 ring-blue-400'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'bg-blue-500/15 border-blue-400 text-white font-bold ring-1 ring-blue-400'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  <div className="w-5 h-5 mx-auto mb-1 font-black text-blue-400 text-xs">D</div>
-                  <div className="text-xs font-bold text-white">DANA</div>
-                  <div className="text-[10px] text-slate-400">Transfer Manual</div>
+                  <div className="font-bold text-blue-400 text-xs mb-0.5">DANA</div>
+                  <div className="text-slate-400 text-[10px]">Transfer</div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('gopay')}
-                  className={`p-3 rounded-xl border text-center transition-all ${
+                  className={`p-2.5 rounded-xl border text-center transition-all ${
                     paymentMethod === 'gopay'
-                      ? 'bg-emerald-500/20 border-emerald-400 text-white font-bold ring-1 ring-emerald-400'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'bg-emerald-500/15 border-emerald-400 text-white font-bold ring-1 ring-emerald-400'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  <div className="w-5 h-5 mx-auto mb-1 font-black text-emerald-400 text-xs">G</div>
-                  <div className="text-xs font-bold text-white">GoPay</div>
-                  <div className="text-[10px] text-slate-400">Transfer Manual</div>
+                  <div className="font-bold text-emerald-400 text-xs mb-0.5">GoPay</div>
+                  <div className="text-slate-400 text-[10px]">Transfer</div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('bca')}
-                  className={`p-3 rounded-xl border text-center transition-all ${
+                  className={`p-2.5 rounded-xl border text-center transition-all ${
                     paymentMethod === 'bca'
-                      ? 'bg-purple-500/20 border-purple-400 text-white font-bold ring-1 ring-purple-400'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'bg-purple-500/15 border-purple-400 text-white font-bold ring-1 ring-purple-400'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  <div className="w-5 h-5 mx-auto mb-1 font-black text-purple-400 text-xs">BCA</div>
-                  <div className="text-xs font-bold text-white">Bank BCA</div>
-                  <div className="text-[10px] text-slate-400">Transfer Bank</div>
+                  <div className="font-bold text-purple-400 text-xs mb-0.5">Bank BCA</div>
+                  <div className="text-slate-400 text-[10px]">Transfer</div>
                 </button>
               </div>
 
-              {/* Payment Details Drawer */}
-              <div className="mt-3 p-4 rounded-2xl bg-slate-950/80 border border-white/5">
+              {/* Payment Details Preview */}
+              <div className="mt-2.5 p-3 rounded-2xl bg-slate-950 border border-slate-850">
                 {paymentMethod === 'qris' && (
-                  <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <div className="w-28 h-28 bg-white p-1.5 rounded-xl shadow-md shrink-0 flex items-center justify-center">
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <div className="w-24 h-24 bg-white p-1 rounded-xl shadow shrink-0 flex items-center justify-center">
                       <img
                         src={settings.qrisImageUrl}
-                        alt="QRIS Zynex Studio"
+                        alt="QRIS Zynex"
                         className="w-full h-full object-contain"
                       />
                     </div>
-                    <div className="text-xs text-slate-300 space-y-1">
-                      <div className="font-bold text-white flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-cyan-400" />
-                        <span>QRIS Support Semua Aplikasi</span>
+                    <div className="text-xs text-slate-300 space-y-0.5 text-center sm:text-left">
+                      <div className="font-bold text-white flex items-center justify-center sm:justify-start gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Scan QRIS (BCA, DANA, GoPay, OVO)</span>
                       </div>
-                      <p className="text-slate-400">
-                        Scan QR di atas via GoPay, DANA, OVO, ShopeePay, BCA Mobile, Livin Mandiri, BRImo, dll.
+                      <p className="text-slate-400 text-[11px]">
+                        Scan QR di atas dengan nominal yang tertera.
                       </p>
-                      <div className="text-cyan-400 font-semibold pt-1">
-                        Nominal: {formatIDR(currentPrice)}
+                      <div className="text-cyan-400 font-bold font-mono">
+                        Total: {formatIDR(currentPrice)}
                       </div>
                     </div>
                   </div>
@@ -323,16 +317,16 @@ export const OrderModal: React.FC = () => {
                 {paymentMethod === 'dana' && (
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-slate-400">Nomor Akun DANA:</div>
-                      <div className="text-sm font-mono font-bold text-white mt-0.5">{settings.danaNumber}</div>
-                      <div className="text-[11px] text-slate-400">a/n {settings.danaName}</div>
+                      <div className="text-[11px] text-slate-400">Nomor DANA:</div>
+                      <div className="text-xs font-mono font-bold text-white">{settings.danaNumber}</div>
+                      <div className="text-[10px] text-slate-400">a/n {settings.danaName}</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleCopy(settings.danaNumber, 'DANA')}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-semibold flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-cyan-400 text-xs font-semibold flex items-center gap-1"
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-3 h-3" />
                       <span>{copiedText === 'DANA' ? 'Disalin!' : 'Salin'}</span>
                     </button>
                   </div>
@@ -341,16 +335,16 @@ export const OrderModal: React.FC = () => {
                 {paymentMethod === 'gopay' && (
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-slate-400">Nomor GoPay:</div>
-                      <div className="text-sm font-mono font-bold text-white mt-0.5">{settings.gopayNumber}</div>
-                      <div className="text-[11px] text-slate-400">a/n {settings.gopayName}</div>
+                      <div className="text-[11px] text-slate-400">Nomor GoPay:</div>
+                      <div className="text-xs font-mono font-bold text-white">{settings.gopayNumber}</div>
+                      <div className="text-[10px] text-slate-400">a/n {settings.gopayName}</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleCopy(settings.gopayNumber, 'GoPay')}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-semibold flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-cyan-400 text-xs font-semibold flex items-center gap-1"
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-3 h-3" />
                       <span>{copiedText === 'GoPay' ? 'Disalin!' : 'Salin'}</span>
                     </button>
                   </div>
@@ -359,16 +353,16 @@ export const OrderModal: React.FC = () => {
                 {paymentMethod === 'bca' && (
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-slate-400">Nomor Rekening BCA:</div>
-                      <div className="text-sm font-mono font-bold text-white mt-0.5">{settings.bcaNumber}</div>
-                      <div className="text-[11px] text-slate-400">a/n {settings.bcaName}</div>
+                      <div className="text-[11px] text-slate-400">Nomor Rekening BCA:</div>
+                      <div className="text-xs font-mono font-bold text-white">{settings.bcaNumber}</div>
+                      <div className="text-[10px] text-slate-400">a/n {settings.bcaName}</div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleCopy(settings.bcaNumber, 'BCA')}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-semibold flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-cyan-400 text-xs font-semibold flex items-center gap-1"
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-3 h-3" />
                       <span>{copiedText === 'BCA' ? 'Disalin!' : 'Salin'}</span>
                     </button>
                   </div>
@@ -380,61 +374,47 @@ export const OrderModal: React.FC = () => {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 hover:from-emerald-400 hover:to-cyan-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2"
               >
-                <MessageCircle className="w-4 h-4 text-slate-950" />
-                <span>Kirim Pesanan ke WhatsApp Admin ({formatIDR(currentPrice)})</span>
+                <MessageCircle className="w-4 h-4 fill-slate-950" />
+                <span>Kirim Pesanan ke WhatsApp ({formatIDR(currentPrice)})</span>
               </button>
-              <p className="text-[11px] text-center text-slate-400 mt-2">
-                🔒 Data pesanan Anda tersimpan aman dan diteruskan langsung ke Admin Zynex Studio.
-              </p>
             </div>
           </form>
         ) : (
-          /* Order Submitted Success View */
-          <div className="p-6 sm:p-8 text-center space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
-              <CheckCircle2 className="w-10 h-10" />
+          /* Order Submitted Confirmation */
+          <div className="p-5 sm:p-6 text-center space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
 
-            <h3 className="text-2xl font-black text-white">Pesanan Berhasil Dibuat!</h3>
-            
-            <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/10 max-w-md mx-auto text-left text-xs space-y-2">
-              <div className="flex justify-between pb-2 border-b border-slate-800">
-                <span className="text-slate-400">No. Invoice:</span>
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold text-white">Pesanan Berhasil Dicatat!</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Silakan lakukan pembayaran lalu kirim bukti transfer ke WhatsApp admin kami.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-left text-xs space-y-1.5 max-w-sm mx-auto">
+              <div className="flex justify-between pb-1.5 border-b border-slate-850">
+                <span className="text-slate-400">Invoice:</span>
                 <span className="font-mono font-bold text-cyan-400">{submittedOrder.invoiceNumber}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Produk:</span>
                 <span className="font-semibold text-white">{submittedOrder.productName}</span>
               </div>
-              {submittedOrder.variantName && (
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Varian:</span>
-                  <span className="text-slate-300">{submittedOrder.variantName}</span>
-                </div>
-              )}
               <div className="flex justify-between">
-                <span className="text-slate-400">Total Harga:</span>
+                <span className="text-slate-400">Total:</span>
                 <span className="font-bold text-emerald-400">{formatIDR(submittedOrder.price)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Metode Bayar:</span>
+                <span className="text-slate-400">Metode:</span>
                 <span className="font-semibold text-white uppercase">{submittedOrder.paymentMethod}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-slate-800">
-                <span className="text-slate-400">Status:</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold text-[10px]">
-                  Menunggu Verifikasi Pembayaran
-                </span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Silakan lakukan pembayaran lalu konfirmasi bukti transfer melalui chat WhatsApp dengan CS kami.
-            </p>
-
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2 max-w-sm mx-auto">
               <a
                 href={buildWhatsappOrderUrl({
                   adminPhone: settings.whatsappNumber,
@@ -449,15 +429,15 @@ export const OrderModal: React.FC = () => {
                 })}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto flex-1 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md flex items-center justify-center gap-1.5"
               >
-                <MessageCircle className="w-4 h-4" />
-                <span>Buka Chat WhatsApp CS</span>
+                <MessageCircle className="w-4 h-4 fill-slate-950" />
+                <span>Chat Admin WhatsApp</span>
               </a>
 
               <button
                 onClick={closeOrderModal}
-                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs"
               >
                 Tutup
               </button>

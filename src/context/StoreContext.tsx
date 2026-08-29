@@ -11,7 +11,7 @@ interface StoreContextType {
   isAdminAuthenticated: boolean;
   activeOrderProduct: Product | null;
   selectedVariant: any | null;
-  setCurrentView: (view: 'store' | 'admin') => void;
+  navigateTo: (view: 'store' | 'admin') => void;
   openOrderModal: (product: Product, variant?: any) => void;
   closeOrderModal: () => void;
   loginAdmin: (pin: string) => boolean;
@@ -75,8 +75,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   });
 
-  // Navigation & View state
-  const [currentView, setCurrentView] = useState<'store' | 'admin'>('store');
+  // Detect initial view based on URL path or hash
+  const getInitialView = (): 'store' | 'admin' => {
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    if (path === '/admin' || path.startsWith('/admin') || hash === '#admin' || hash === '#/admin') {
+      return 'admin';
+    }
+    return 'store';
+  };
+
+  const [currentView, setCurrentView] = useState<'store' | 'admin'>(getInitialView);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem(STORAGE_KEYS.AUTH) === 'true';
   });
@@ -110,21 +119,46 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [orders]);
 
-  // Handle URL hash routing (#admin / #store) or pathname
+  // Handle URL change detection (supports /admin, #admin, browser back/forward)
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash;
-      const path = window.location.pathname;
-      if (hash === '#admin' || path.includes('/admin')) {
+    const handleUrlChange = () => {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path === '/admin' || path.startsWith('/admin') || hash === '#admin' || hash === '#/admin') {
         setCurrentView('admin');
       } else {
         setCurrentView('store');
       }
     };
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+
+    // Secret shortcut: Ctrl + Shift + A to jump to /admin
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        navigateTo('admin');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
+
+  const navigateTo = (view: 'store' | 'admin') => {
+    setCurrentView(view);
+    if (view === 'admin') {
+      window.history.pushState({}, '', '/admin');
+    } else {
+      window.history.pushState({}, '', '/');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const openOrderModal = (product: Product, variant?: any) => {
     setActiveOrderProduct(product);
@@ -137,8 +171,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const loginAdmin = (pin: string): boolean => {
-    // Default PIN is 123456 or zynex123 or admin
-    if (pin === '123456' || pin.toLowerCase() === 'zynex123' || pin.toLowerCase() === 'admin') {
+    const cleanPin = pin.trim().toLowerCase();
+    if (cleanPin === '123456' || cleanPin === 'zynex123' || cleanPin === 'admin') {
       setIsAdminAuthenticated(true);
       localStorage.setItem(STORAGE_KEYS.AUTH, 'true');
       return true;
@@ -149,6 +183,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const logoutAdmin = () => {
     setIsAdminAuthenticated(false);
     localStorage.removeItem(STORAGE_KEYS.AUTH);
+    navigateTo('store');
   };
 
   const addProduct = (newProd: Omit<Product, 'id'>): Product => {
@@ -265,7 +300,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isAdminAuthenticated,
         activeOrderProduct,
         selectedVariant,
-        setCurrentView,
+        navigateTo,
         openOrderModal,
         closeOrderModal,
         loginAdmin,

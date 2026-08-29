@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { Lock, KeyRound, ShieldAlert, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { Lock, KeyRound, ShieldAlert, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export const AdminLogin: React.FC = () => {
-  const { loginAdmin, setCurrentView } = useStore();
+  const { loginAdmin, navigateTo } = useStore();
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
 
@@ -15,85 +15,60 @@ export const AdminLogin: React.FC = () => {
     }
   };
 
-  const handleQuickDemoLogin = () => {
-    loginAdmin('123456');
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Glow Orbs */}
-      <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div className="w-full max-w-md rounded-3xl bg-slate-900/85 border border-cyan-500/30 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl shadow-cyan-500/10 relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#050811] relative overflow-hidden">
+      <div className="w-full max-w-sm rounded-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl relative z-10">
         <button
-          onClick={() => {
-            setCurrentView('store');
-            window.location.hash = '';
-          }}
+          onClick={() => navigateTo('store')}
           className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white mb-6 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali ke Storefront</span>
+          <span>Kembali ke Halaman Utama</span>
         </button>
 
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-cyan-500/40 flex items-center justify-center mx-auto text-cyan-400 mb-4 shadow-lg shadow-cyan-500/20">
-            <Lock className="w-7 h-7" />
+          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto text-cyan-400 mb-3.5">
+            <Lock className="w-6 h-6" />
           </div>
 
-          <h2 className="text-2xl font-black text-white">Admin Portal</h2>
+          <h2 className="text-xl font-extrabold text-white">Administrator Access</h2>
           <p className="text-xs text-slate-400 mt-1">
-            Zynex Studio Management Panel & Store Controller
+            Silakan masukkan PIN otorisasi untuk masuk ke Control Panel Zynex Studio.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Masukkan PIN / Password Admin:
-            </label>
             <div className="relative">
-              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
-                placeholder="PIN Admin (Default: 123456)"
+                placeholder="PIN Keamanan"
                 value={pin}
                 onChange={(e) => {
                   setPin(e.target.value);
                   setError(false);
                 }}
-                className="w-full bg-slate-950 border border-white/10 focus:border-cyan-500/60 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none"
+                className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none"
                 autoFocus
               />
             </div>
             {error && (
-              <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
+              <p className="text-xs text-red-400 mt-2 flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
-                <span>PIN salah! Silakan coba lagi atau gunakan tombol login instan di bawah.</span>
+                <span>PIN tidak valid. Silakan coba kembali.</span>
               </p>
             )}
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2"
+            className="w-full py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 transition-all flex items-center justify-center gap-1.5"
           >
-            <span>Masuk ke Dashboard</span>
+            <span>Masuk Panel</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-slate-800 text-center">
-          <p className="text-[11px] text-slate-500 mb-2">Akses Demo Cepat:</p>
-          <button
-            onClick={handleQuickDemoLogin}
-            className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-white/5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Login Instan (PIN: 123456)</span>
-          </button>
-        </div>
       </div>
     </div>
   );
