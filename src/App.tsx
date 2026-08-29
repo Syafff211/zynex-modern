@@ -11,6 +11,7 @@ import { FAQ } from './components/store/FAQ';
 import { Footer } from './components/store/Footer';
 import { FloatingWhatsapp } from './components/store/FloatingWhatsapp';
 import { OrderModal } from './components/store/OrderModal';
+import { ScrollManager } from './components/store/ScrollManager';
 import { AdminLogin } from './components/admin/AdminLogin';
 import { AdminLayout } from './components/admin/AdminLayout';
 
@@ -25,11 +26,14 @@ export function AppContent() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#050811] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+    <div className="relative min-h-screen bg-[#040711] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+      {/* Top Scroll Indicator */}
+      <ScrollManager />
+
       {/* Top Banner Announcement */}
       <AnnouncementBanner />
 
-      {/* Main Glassmorphic Navigation */}
+      {/* Main Navigation */}
       <Navbar />
 
       {/* Main Content Sections */}
